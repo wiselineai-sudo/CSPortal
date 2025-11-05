@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approach 3: Card-Based Selection Grid - Iridium Partner Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1536px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .grid-2col {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-button:hover {
+            color: #0f172a;
+        }
+
+        .back-button svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .card-lg {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #475569;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .filter-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #94a3b8;
+            margin-right: 0.25rem;
+        }
+
+        .filter-tag {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+        }
+
+        .filter-tag:hover {
+            background: #e2e8f0;
+        }
+
+        .filter-tag.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .cards-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .card {
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e2e8f0;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .card.selected {
+            border-color: #f97316;
+            background: #fef3c7;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+        }
+
+        .card-icon {
+            width: 2rem;
+            height: 2rem;
+            margin-bottom: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .card-icon.selected {
+            color: #f97316;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .form-section {
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0.25rem;
+        }
+
+        .form-header-content {
+            flex: 1;
+        }
+
+        .form-header-title {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-header-subtitle {
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        .file-upload {
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload:hover {
+            border-color: #94a3b8;
+        }
+
+        .file-upload-text {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .file-upload-hint {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .alert-info {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .analysis-panel {
+            position: sticky;
+            top: 2rem;
+        }
+
+        .panel-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .panel-approach {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .section-icon {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .pro-con-list {
+            list-style: none;
+        }
+
+        .pro-con-list li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .pros li::before {
+            content: '+';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .cons li::before {
+            content: '-';
+            position: absolute;
+            left: 0;
+            color: #f97316;
+            font-weight: bold;
+        }
+
+        .panel-note {
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            margin-top: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+
+            .analysis-panel {
+                position: static;
+                top: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="history.back()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Overview
+        </button>
+
+        <div class="grid grid-2col">
+            <!-- Main Content -->
+            <div>
+                <div class="card-lg">
+                    <div class="subtitle" style="margin-bottom: 0;">
+                        <h1>Create Request</h1>
+                        <p>Select a request type from the cards below</p>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <svg class="filter-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <button class="filter-tag active" onclick="filterCards('all')">All Requests</button>
+                        <button class="filter-tag" onclick="filterCards('support')">Support</button>
+                        <button class="filter-tag" onclick="filterCards('request')">Requests</button>
+                        <button class="filter-tag" onclick="filterCards('business')">Business</button>
+                        <button class="filter-tag" onclick="filterCards('product')">Product</button>
+                    </div>
+
+                    <!-- Cards Grid -->
+                    <div class="cards-grid" id="cardsContainer">
+                        <!-- Cards will be generated here -->
+                    </div>
+
+                    <!-- Form Container -->
+                    <div id="formContainer" class="hidden"></div>
+                </div>
+            </div>
+
+            <!-- Sidebar Analysis Panel -->
+            <div class="analysis-panel">
+                <div class="panel-card">
+                    <div class="panel-approach">Approach 3</div>
+                    <h2>Card-Based Selection Grid</h2>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div class="section-title">
+                            <svg class="section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2 1m2-1l-2-1m2 1v2.5" />
+                            </svg>
+                            Pros
+                        </div>
+                        <ul class="pro-con-list pros">
+                            <li>Highly visual and scannable layout</li>
+                            <li>All options visible at once (with filtering)</li>
+                            <li>Icons provide quick visual recognition</li>
+                            <li>Filtering reduces cognitive load</li>
+                            <li>Great for returning users who recognize icons</li>
+                            <li>Modern, engaging interface</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div class="section-title">
+                            <svg class="section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Cons
+                        </div>
+                        <ul class="pro-con-list cons">
+                            <li>Requires more screen real estate</li>
+                            <li>Can be overwhelming initially with many cards</li>
+                            <li>Mobile layout requires careful consideration</li>
+                            <li>May need pagination or virtualization for many options</li>
+                            <li>Icon selection must be intuitive</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <div class="section-title">
+                            <svg class="section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4m0 0l1 1m-1-1l-1 1m1-1l1-1m-1 1l-1-1" />
+                            </svg>
+                            Best For
+                        </div>
+                        <p style="font-size: 0.875rem; color: #475569; line-height: 1.5;">
+                            Visually-oriented users and returning partners who prefer to scan options quickly. Excellent for portals with distinct, recognizable request types. Best on tablets and desktops.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="panel-note">
+                    <strong>Note:</strong> This is an interactive prototype. Click around to experience the user flow. Each card selection loads the appropriate request form.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cardsData = [
+            { id: 't2-support', icon: '📞', title: 'T2/Technical Support', description: 'Product or service technical issues', category: 'support' },
+            { id: 'resource-request', icon: '📄', title: 'Resource Request', description: 'Request additional resources', category: 'request' },
+            { id: 'imei-inquiry', icon: '📄', title: 'IMEI Inquiry', description: 'Inquire about IMEI information', category: 'request' },
+            { id: 'new-features', icon: '✨', title: 'New Features', description: 'Request new product features', category: 'product' },
+            { id: 'general-enquiries', icon: '💬', title: 'General Enquiries', description: 'General questions and inquiries', category: 'support' },
+            { id: 'change-request', icon: '💼', title: 'Change Request', description: 'Request account or service changes', category: 'business' },
+            { id: 'billing-dispute', icon: '💼', title: 'Billing Dispute', description: 'Dispute billing issues', category: 'business' },
+            { id: 'short-term-vad', icon: '💼', title: 'Short Term VAD', description: 'Value-added dealer requests', category: 'business' },
+            { id: 'plans-modifications', icon: '💼', title: 'Plans Modifications', description: 'Modify existing plans', category: 'business' },
+            { id: 'migrations', icon: '💼', title: 'Migrations', description: 'Migration support requests', category: 'business' },
+            { id: 'product-dev', icon: '💻', title: 'Product Development', description: 'Hardware, software, integration support', category: 'product' }
+        ];
+
+        let currentFilter = 'all';
+        let selectedCard = null;
+
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            let html = '';
+
+            cardsData.forEach(card => {
+                const isVisible = currentFilter === 'all' || card.category === currentFilter;
+                const isSelected = selectedCard === card.id;
+
+                html += `
+                    <button
+                        class="card ${isSelected ? 'selected' : ''}"
+                        data-category="${card.category}"
+                        onclick="selectCard('${card.id}', '${card.title}', '${card.category}')"
+                        style="${!isVisible ? 'display: none;' : ''}"
+                    >
+                        <span class="card-icon ${isSelected ? 'selected' : ''}">${card.icon}</span>
+                        <div class="card-title">${card.title}</div>
+                        <div class="card-description">${card.description}</div>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterCards(filter) {
+            currentFilter = filter;
+
+            // Update active filter button
+            document.querySelectorAll('.filter-tag').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update card visibility
+            const cards = document.querySelectorAll('[data-category]');
+            cards.forEach(card => {
+                if (filter === 'all' || card.dataset.category === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function selectCard(cardId, title, category) {
+            selectedCard = cardId;
+            renderCards();
+
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.remove('hidden');
+            formContainer.innerHTML = renderForm(title, category);
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function renderForm(title, category) {
+            const showAccountField = category.toLowerCase().includes('business');
+            const showDeviceField = category.toLowerCase().includes('support');
+
+            return `
+                <div class="form-section">
+                    <div class="form-header">
+                        <div class="form-header-content">
+                            <div class="form-header-title">Request Form</div>
+                            <div class="form-header-subtitle">${title}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Request Title <span class="required">*</span></label>
+                        <input type="text" placeholder="Brief description of your request">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Priority <span class="required">*</span></label>
+                        <select>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                            <option>Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Detailed Description <span class="required">*</span></label>
+                        <textarea rows="5" placeholder="Please provide detailed information about your request..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attachments</label>
+                        <div class="file-upload">
+                            <div class="file-upload-text">Click to upload or drag and drop files here</div>
+                            <div class="file-upload-hint">PDF, PNG, JPG up to 10MB</div>
+                        </div>
+                    </div>
+
+                    ${showAccountField ? `
+                        <div class="form-group">
+                            <label>Account Reference</label>
+                            <input type="text" placeholder="Enter account or reference number">
+                        </div>
+                    ` : ''}
+
+                    ${showDeviceField ? `
+                        <div class="form-group">
+                            <label>Device/Product ID</label>
+                            <input type="text" placeholder="Enter device or product identifier">
+                        </div>
+                    ` : ''}
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="urgent">
+                        <label for="urgent">This is an urgent request requiring immediate attention</label>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary">
+                            <span style="margin-right: 0.5rem;">📤</span>
+                            Submit Request
+                        </button>
+                        <button class="btn btn-secondary">Save Draft</button>
+                    </div>
+
+                    <div class="alert-info">
+                        <strong>Note:</strong> This is a demonstration form. In the actual Power Portal implementation, fields would be dynamically configured based on the Dataverse entity and form customization.
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize
+        renderCards();
+    </script>
+</body>
+</html>
